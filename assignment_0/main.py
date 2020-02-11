@@ -28,6 +28,7 @@ deg_9: FitFunct = lambda p, x: (p[0]
 # - f is a python function that takes an ndarray of params
 #   and a ndarray of x points returning the y values
 # - n_params indicates the number of parameters the function takes
+#   in this case the order + 1
 # - λ is the regularization punishment for large degrees
 # optionally init_params can be used to pass the intial guess to
 # start optimising from
@@ -35,13 +36,14 @@ def fit_regularized(f: FitFunct, n_params: int, λ: float,
     x_data: np.ndarray, y_data: np.ndarray, init_params=None):
 
     if init_params is None:
-        p0 = [0 for i in range(0,n_params)]
+        #p0 = [0 for i in range(0,n_params)]
+        p0 = np.zeros(n_params)
     else:
         p0 = init_params
 
     err_func = lambda p,x,y: f(p,x)-y - λ/2*square_then_sum(p)
-    p1, success = optimize.leastsq(err_func, p0[:], args=(x_data, y_data))
-    return p1
+    res = optimize.least_squares(err_func, p0, args=(x_data, y_data))
+    return res.x
 
 def square_then_sum(list: List[float]):
     list = map(lambda x: x**2, list)
@@ -66,9 +68,9 @@ if __name__ == '__main__':
     y_train = y_data+noise_train
     y_test = y_data+noise_test
 
-    fit_funct = deg_1
-    fit_params = fit_regularized(fit_funct, 2, 0, x_data, y_train)
-
+    fit_funct = deg_9
+    fit_params = fit_regularized(fit_funct, 10, 0, x_data, y_train)
+    print(fit_params)
     plt.scatter(x_data, y_train, label="Training data", color="tab:orange")
 
     x_grid = np.linspace(0,1,500)
