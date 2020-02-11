@@ -5,7 +5,7 @@ import scipy.optimize as optimize
 import matplotlib.pyplot as plt
 
 from functools import reduce
-from typing import NewType, List, Callable
+from typing import NewType, List, Callable, Union, Iterator, Optional
 
 import unittest
 
@@ -16,7 +16,7 @@ STD = 0.05
 
 target_funct = lambda x: 0.5+0.4*np.sin(2*np.pi*x)
 
-FitFunct = NewType("FitFunct", Callable[[List[float],np.ndarray], np.ndarray])
+FitFunct = Callable[[np.ndarray,np.ndarray], np.ndarray] #type alias
 deg_0: FitFunct = lambda p, x: x*0+p[0]
 deg_1: FitFunct = lambda p, x: p[0]+p[1]*x
 deg_3: FitFunct = lambda p, x: p[0]+p[1]*x+p[2]*x**2+p[3]*x**3
@@ -33,7 +33,8 @@ deg_9: FitFunct = lambda p, x: (p[0]
 # optionally init_params can be used to pass the intial guess to
 # start optimising from
 def fit_regularized(f: FitFunct, n_params: int, λ: float, 
-    x_data: np.ndarray, y_data: np.ndarray, init_params=None):
+    x_data: np.ndarray, y_data: np.ndarray, 
+    init_params: Optional[np.ndarray] = None) -> np.ndarray:
 
     if init_params is None:
         #p0 = [0 for i in range(0,n_params)]
@@ -45,7 +46,7 @@ def fit_regularized(f: FitFunct, n_params: int, λ: float,
     res = optimize.least_squares(err_func, p0, args=(x_data, y_data))
     return res.x
 
-def square_then_sum(list: List[float]):
+def square_then_sum(list: Iterator[float]):
     list = map(lambda x: x**2, list)
     return reduce(lambda x, y: x+y, list)
 
