@@ -4,15 +4,20 @@ import numpy as np
 import scipy.optimize as optimize
 import matplotlib.pyplot as plt
 
+from functools import reduce
 from typing import NewType, List, Callable
+
+import unittest
 
 SEED = 12453987
 NUMB = 9
 MEAN = 0
 STD = 0.05
 
+target_funct = lambda x: 0.5+0.4*np.sin(2*np.pi*x)
+
 FitFunct = NewType("FitFunct", Callable[[List[float],np.ndarray], np.ndarray])
-deg_0: FitFunct = lambda p, x: p[0]
+deg_0: FitFunct = lambda p, x: x*0+p[0]
 deg_1: FitFunct = lambda p, x: p[0]+p[1]*x
 deg_3: FitFunct = lambda p, x: p[0]+p[1]*x+p[2]*x**2+p[3]*x**3
 deg_9: FitFunct = lambda p, x: (p[0]
@@ -34,22 +39,41 @@ def fit_regularized(f: FitFunct, n_params: int, λ: float,
     else:
         p0 = init_params
 
-    err_func = lambda p,x,y: f(p,x)-y - λ/2*sum(p)**2
+    err_func = lambda p,x,y: f(p,x)-y - λ/2*square_then_sum(p)
     p1, success = optimize.leastsq(err_func, p0[:], args=(x_data, y_data))
-
     return p1
 
+def square_then_sum(list: List[float]):
+    list = map(lambda x: x**2, list)
+    return reduce(lambda x, y: x+y, list)
 
+#tests to validate
+class Tests(unittest.TestCase):
+    def test_upper(self):
+        self.assertEqual(square_then_sum([0.5,1,1.5,2]), 7.5)
 
-x_data = np.linspace(2.0, 3.0, num=NUMB)
-y_data = 0.5+0.4*np.sin(2*np.pi*x_data)
+if __name__ == '__main__':
+    #run test
+    #unittest.main()
+    
+    x_data = np.linspace(0, 1, num=NUMB)
+    y_data = target_funct(x_data)
 
-np.random.seed(SEED)
-noise_train = np.random.normal(MEAN, STD, NUMB)
-noise_test = np.random.normal(MEAN, STD, NUMB)
+    np.random.seed(SEED)
+    noise_train = np.random.normal(MEAN, STD, NUMB)
+    noise_test = np.random.normal(MEAN, STD, NUMB)
 
-y_train = y_data+noise_train
-y_test = y_data+noise_test
+    y_train = y_data+noise_train
+    y_test = y_data+noise_test
 
-res = fit_regularized(deg_1, 2, 1, x_data, y_train)
-print(res)
+    fit_funct = deg_1
+    fit_params = fit_regularized(fit_funct, 2, 0, x_data, y_train)
+
+    plt.scatter(x_data, y_train, label="Training data", color="tab:orange")
+
+    x_grid = np.linspace(0,1,500)
+    plt.plot(x_grid, fit_funct(fit_params, x_grid), label="Fit", color="tab:blue")
+    plt.plot(x_grid, target_funct(x_grid), label="Actual/Target", color="tab:olive")
+
+    plt.show()
+    plt.close()
