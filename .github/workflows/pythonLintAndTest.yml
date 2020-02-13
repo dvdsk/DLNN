@@ -60,7 +60,7 @@ jobs:
           github_token: ${{ secrets.github_token }}
           # Enable linters
           mypy_dir: "./src"
-          mypy_args: "*"
+          mypy_args: "--ignore-missing-stubs=numpy,scipy,scipy.optimise,matplotlib,matplotlib.pyplot *"
           mypy: true
 
           flake8_dir: "./src"
