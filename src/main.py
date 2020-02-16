@@ -1,5 +1,4 @@
 # inspired by https://scipy-cookbook.readthedocs.io/items/FittingData.html
-
 import numpy as np
 import scipy.optimize as optimize
 import matplotlib.pyplot as plt
@@ -42,7 +41,6 @@ deg_9: FitFunct = lambda p, x: (
 # start optimising from
 def fit_regularized(
     f: FitFunct,
-    n_params: int,
     λ: float,
     x_data: np.ndarray,
     y_data: np.ndarray,
@@ -51,7 +49,7 @@ def fit_regularized(
 
     if init_params is None:
         # p0 = [0 for i in range(0,n_params)]
-        p0 = np.zeros(n_params)
+        p0 = np.zeros(100)
     else:
         p0 = init_params
 
@@ -70,7 +68,7 @@ class Tests(unittest.TestCase):
     def test_upper(self):
         self.assertEqual(square_then_sum([0.5, 1, 1.5, 2]), 7.5)
 
-
+"""
 if __name__ == "__main__":
     # run test
     # unittest.main()
@@ -85,14 +83,56 @@ if __name__ == "__main__":
     y_train = y_data + noise_train
     y_test = y_data + noise_test
 
-    fit_funct = deg_9
-    fit_params = fit_regularized(fit_funct, 10, 0, x_data, y_train)
-    print(fit_params)
-    plt.scatter(x_data, y_train, label="Training data", color="tab:orange")
+    for fit_funct, name in [(deg_0, "deg_0"), (deg_1, "deg_1"), (deg_3, "deg_3"), (deg_9, "deg_9")]:
+        fit_params = fit_regularized(fit_funct, 0, x_data, y_train)
+        plt.scatter(x_data, y_train, label="Training data", color="tab:orange")
 
-    x_grid = np.linspace(0, 1, 500)
-    plt.plot(x_grid, fit_funct(fit_params, x_grid), label="Fit", color="tab:blue")
-    plt.plot(x_grid, target_funct(x_grid), label="Actual/Target", color="tab:olive")
+        x_grid = np.linspace(0, 1, 500)
+        plt.plot(x_grid, fit_funct(fit_params, x_grid), label="Fit", color="tab:blue")
+        plt.plot(x_grid, target_funct(x_grid), label="Actual/Target", color="tab:olive")
+        plt.title(name)
+        plt.show()
+        plt.close()
+"""
 
-    plt.show()
-    plt.close()
+
+#2.a: 2^n
+#2.b: \sqrt(n), max distance always between the point \bold{x}=(0_1,0_2,..,0_n) and \bold{y}=(1_1, 1_2, ..., 1_n). This Euclidean distance equals \sqrt{\bold{x}\ctimes \bold{y}}=\sqrt{(1-0)_1^2+(1-0)_2^2+...+(1-0)_n^2}=\sqty{n\ctimes 1^2}=\sqrt{n}
+
+#2.c: 
+"""
+volume=[]
+dims= [1,2,3,4,5,6,7,8,9]
+for ndim in dims:
+    Nnum=10**5
+    x=np.reshape(np.random.uniform(0,1,ndim*Nnum), (Nnum,ndim))
+
+    def in_sphere(coord: np.ndarray) -> int:
+        if np.sum((coord-0.5)**2)<0.5**2:
+            return 1
+        return 0
+
+
+    z= np.apply_along_axis(in_sphere, 1, x)
+    volume.append(z.sum()/Nnum)
+print(volume)
+plt.plot(dims, volume)
+plt.show()
+"""
+
+#2.e
+list2=[]
+Nnum2=1
+for i in range(1,11):
+    list2.append(2**i)
+print(list2)
+
+x=None
+for idx, name in enumerate(list2):
+    x=np.reshape(np.random.uniform(0,1,name*Nnum2), (Nnum2,name))
+
+def all_distances(point: np.ndarray) -> np.ndarray:
+    print(str(point)+"\n", flush=True)
+    return  1
+
+np.apply_along_axis(all_distances, 1, x)
